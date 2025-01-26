@@ -1,0 +1,87 @@
+<!-- ui/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chợ Gỗ</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+        }
+        .price-tag {
+            font-size: 24px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(0,0,0,0.3);
+        }
+        .up { color: #2ecc71; }
+        .down { color: #e74c3c; }
+        input[type="number"] {
+            padding: 8px;
+            width: 100%;
+            margin: 10px 0;
+            background: #333;
+            border: 1px solid #444;
+            color: #fff;
+        }
+        button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover { background: #219a52; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="priceDisplay" class="price-tag"></div>
+        <input type="number" id="sellAmount" placeholder="Số lượng gỗ">
+        <button onclick="sellWood()">Bán Gỗ</button>
+        <button onclick="closeUI()">Đóng</button>
+    </div>
+
+    <script>
+        function updatePrice(data) {
+            const priceDiv = document.getElementById('priceDisplay');
+            const change = data.currentPrice - data.lastPrice;
+            const percent = ((Math.abs(change) / data.lastPrice) * 100).toFixed(2);
+            
+            priceDiv.innerHTML = `
+                Giá hiện tại: $${data.currentPrice}<br>
+                <span class="${change >= 0 ? 'up' : 'down'}">
+                    ${change >= 0 ? '↑' : '↓'} ${percent}%
+                </span>
+            `;
+        }
+
+        function sellWood() {
+            const amount = document.getElementById('sellAmount').value;
+            if(amount > 0) {
+                fetch(`https://${GetParentResourceName()}/sell`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amount })
+                });
+            }
+        }
+
+        function closeUI() {
+            fetch(`https://${GetParentResourceName()}/close`, {
+                method: 'POST'
+            });
+        }
+
+        window.addEventListener('message', (event) => {
+            if(event.data.action === 'updatePrice') {
+                updatePrice(event.data);
+            }
+        });
+    </script>
+</body>
+</html>
